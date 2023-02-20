@@ -57,4 +57,4 @@ async function textResponseGenerator(comment){
     });
 }
 
-console.log(textResponseGenerator("Are you smart or just stupid"));
+console.log(textResponseGenerator(""));
