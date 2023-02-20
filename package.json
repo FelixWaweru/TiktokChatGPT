@@ -9,8 +9,10 @@
   "author": "Felix Waweru",
   "license": "ISC",
   "dependencies": {
+    "dotenv": "^16.0.3",
     "elevenlabs-api": "^1.0.6",
     "openai": "^3.1.0",
+    "sentiment": "^5.0.2",
     "tiktok-live-connector": "^1.0.2"
   }
 }

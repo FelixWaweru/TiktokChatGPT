@@ -1,62 +1,60 @@
-import { Configuration, OpenAIApi } from "openai";
+var chat = require('./gpt.js');
+const { WebcastPushConnection } = require('tiktok-live-connector');
+var Sentiment = require('sentiment');
+require('dotenv').config();
 
-const configuration = new Configuration({
-  apiKey: process.env.OPENAI_API_KEY,
-});
-const openai = new OpenAIApi(configuration);
+var sentiment = new Sentiment();
 
-export default async function (req, res) {
-  if (!configuration.apiKey) {
-    res.status(500).json({
-      error: {
-        message: "OpenAI API key not configured, please follow instructions in README.md",
-      }
-    });
-    return;
-  }
+async function liveStream(){
+    // Username of someone who is currently live
+    let tiktokUsername = process.env.TIKTOK_USERNAME;
 
-  const animal = req.body.animal || '';
-  if (animal.trim().length === 0) {
-    res.status(400).json({
-      error: {
-        message: "Please enter a valid animal",
-      }
-    });
-    return;
-  }
+    // Create a new wrapper object and pass the username
+    let tiktokLiveConnection = new WebcastPushConnection(tiktokUsername);
 
-  try {
-    const completion = await openai.createCompletion({ // Text generation AI
-      model: "text-davinci-003",
-      prompt: generatePrompt(animal), // Prompt that you want ai to respond to
-      temperature: 0.6,
-    });
-    res.status(200).json({ result: completion.data.choices[0].text });
-  } catch(error) {
-    // Consider adjusting the error handling logic for your use case
-    if (error.response) {
-      console.error(error.response.status, error.response.data);
-      res.status(error.response.status).json(error.response.data);
-    } else {
-      console.error(`Error with OpenAI API request: ${error.message}`);
-      res.status(500).json({
-        error: {
-          message: 'An error occurred during your request.',
-        }
-      });
+    // Connect to the chat (await can be used as well)
+    tiktokLiveConnection.connect().then(state => {
+        console.info(`Connected to roomId ${state.roomId}`);
+    }).catch(err => {
+        console.error('Failed to connect', err);
+    })
+
+    // In this case we listen to chat messages (comments)
+    tiktokLiveConnection.on('chat', data => {
+        console.log(`${data.uniqueId} (userId:${data.userId}) writes: ${data.comment}`);
+    })
+
+    // And here we receive gifts sent to the streamer
+    tiktokLiveConnection.on('gift', data => {
+        console.log(`${data.uniqueId} (userId:${data.userId}) sends ${data.giftId}`);
+    })
+}
+
+async function textResponseGenerator(comment){
+    // Sentiment analysis
+    var result = sentiment.analyze(comment);
+    console.log(result.score);    // Score: -2, Comparative: -0.666
+
+    // Response types
+    const positive = ["funny", "witty", "empathetic"];
+    const neutral = ["mildly sarcastic", "neutral"];
+    const negative = ["sarcastic", "very sarcastic", "angry"];
+
+    // vary response type based on sentiment analysis
+    let conversationTone = "";
+    if (result.score >= 4){
+        conversationTone = positive[Math.floor(Math.random() * positive.length)];
     }
-  }
+    else if (result.score >= 1 || result.score < 4){
+        conversationTone = neutral[Math.floor(Math.random() * neutral.length)];
+    }
+    else if (result.score <= 0){
+        conversationTone = negative[Math.floor(Math.random() * negative.length)];
+    }
+
+    const chatResponse = await chat(comment, conversationTone).then(r => {
+        console.log("RES: ", r)
+    });
 }
 
-function generatePrompt(animal) { // Conversational text input
-  const capitalizedAnimal =
-    animal[0].toUpperCase() + animal.slice(1).toLowerCase();
-  return `Suggest three names for an animal that is a superhero.
-
-Animal: Cat
-Names: Captain Sharpclaw, Agent Fluffball, The Incredible Feline
-Animal: Dog
-Names: Ruff the Protector, Wonder Canine, Sir Barks-a-Lot
-Animal: ${capitalizedAnimal}
-Names:`;
-}
+console.log(textResponseGenerator("Are you smart or just stupid"));
