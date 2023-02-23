@@ -22,6 +22,8 @@ async function liveStream(){
     // In this case we listen to chat messages (comments)
     tiktokLiveConnection.on('chat', data => {
         console.log(`${data.uniqueId} (userId:${data.userId}) writes: ${data.comment}`);
+        // Generate response
+        responseGenerator(data.comment);
     })
 
     // And here we receive gifts sent to the streamer
@@ -30,9 +32,9 @@ async function liveStream(){
     })
 }
 
-async function textResponseGenerator(comment){
+async function textResponseGenerator(statement){
     // Sentiment analysis
-    var result = sentiment.analyze(comment);
+    var result = sentiment.analyze(statement);
     console.log(result.score);    // Score: -2, Comparative: -0.666
 
     // Response types
@@ -52,9 +54,16 @@ async function textResponseGenerator(comment){
         conversationTone = negative[Math.floor(Math.random() * negative.length)];
     }
 
-    const chatResponse = await chat(comment, conversationTone).then(r => {
-        console.log("RES: ", r)
-    });
+    const chatResponse = await chat(statement, conversationTone);
+    console.log(chatResponse);
 }
 
-console.log(textResponseGenerator(""));
+async function responseGenerator(statement){
+    // Generate Text response from chatGPT
+    const textResponse = textResponseGenerator(statement);
+
+    // Pass the response to the vocal module
+    console.log("VOICE:")
+}
+
+console.log(textResponseGenerator("How is your day going"));
