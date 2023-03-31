@@ -32,8 +32,7 @@ async function liveStream(){
 
 async function textResponseGenerator(comment){
     // Sentiment analysis
-    var result = sentiment.analyze(comment);
-    console.log(result.score);    // Score: -2, Comparative: -0.666
+    var result = sentiment.analyze(comment); // Score: -2, Comparative: -0.666
 
     // Response types
     const positive = ["funny", "witty", "empathetic"];
@@ -52,9 +51,11 @@ async function textResponseGenerator(comment){
         conversationTone = negative[Math.floor(Math.random() * negative.length)];
     }
 
-    const chatResponse = await chat(comment, conversationTone).then(r => {
-        console.log("RES: ", r)
-    });
+    const chatResponse = chat(comment, conversationTone);
+
+    chatResponse.then(function(result) {
+        console.log(result)
+     })
 }
 
-console.log(textResponseGenerator("Are you smart or just stupid"));
+textResponseGenerator("Come up with a long essay explaining to why gravity works")
