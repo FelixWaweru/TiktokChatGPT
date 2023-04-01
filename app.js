@@ -34,7 +34,7 @@ async function liveStream(){
 
 async function textResponseGenerator(statement){
     // Sentiment analysis
-    var result = sentiment.analyze(comment); // Score: -2, Comparative: -0.666
+    var result = sentiment.analyze(statement); // Score: -2, Comparative: -0.666
 
     // Response types
     const positive = ["funny", "witty", "empathetic"];
@@ -53,7 +53,7 @@ async function textResponseGenerator(statement){
         conversationTone = negative[Math.floor(Math.random() * negative.length)];
     }
 
-    const chatResponse = chat(comment, conversationTone);
+    const chatResponse = chat(statement, conversationTone);
 
     chatResponse.then(function(result) {
         console.log(result)
@@ -68,4 +68,4 @@ async function responseGenerator(statement){
     console.log("VOICE:")
 }
 
-console.log(textResponseGenerator("How is your day going"));
+textResponseGenerator("How is your day going")
