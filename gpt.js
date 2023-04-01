@@ -12,7 +12,7 @@ function generatePrompt(statement, conversationTone) { // Conversational text in
   return `Come up with a brief, ${conversationTone} response to the statement ${inputStatement}`;
 }
 
-async function chat (input, responseType) {
+async function chat (input, responseType, callback) {
     if (!configuration.apiKey) {
       console.log({
         error: {
@@ -31,7 +31,7 @@ async function chat (input, responseType) {
         max_tokens: 150
       });
       const response = completion.data.choices[0].text;
-      return response;
+      callback(response);
   
     } catch(error) {
   
