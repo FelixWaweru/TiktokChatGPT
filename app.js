@@ -1,4 +1,6 @@
 var chat = require('./gpt.js');
+var vocaliser = require('./voice.js');
+var player = require('play-sound')(opts = {})
 const { WebcastPushConnection } = require('tiktok-live-connector');
 var Sentiment = require('sentiment');
 require('dotenv').config();
@@ -32,7 +34,7 @@ async function liveStream(){
     })
 }
 
-async function textResponseGenerator(statement){
+async function textResponseGenerator(statement, callback){
     // Sentiment analysis
     var result = sentiment.analyze(statement); // Score: -2, Comparative: -0.666
 
@@ -53,19 +55,27 @@ async function textResponseGenerator(statement){
         conversationTone = negative[Math.floor(Math.random() * negative.length)];
     }
 
-    const chatResponse = chat(statement, conversationTone);
-
-    chatResponse.then(function(result) {
-        console.log(result)
-     })
+    await chat(statement, conversationTone, function(result){
+        callback(result);
+    });
 }
 
 async function responseGenerator(statement){
     // Generate Text response from chatGPT
-    const textResponse = textResponseGenerator(statement);
-
+    let textResponse = "";
+    await textResponseGenerator(statement, function(result){
+        textResponse = result;
+    });
+    
     // Pass the response to the vocal module
-    console.log("VOICE:")
+    vocaliser(textResponse).then(response => {
+        console.log(`RES: ${response}`)
+        player.play(response, function(err){
+            if (err) {
+                console.log(`ERR: ${err}`)
+            }
+          });
+    });
 }
 
-textResponseGenerator("How is your day going")
+responseGenerator("How is your day going")

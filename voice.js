@@ -7,7 +7,7 @@ async function vocaliser(text) {
     const filename = `audio/${new Date(new Date().getTime() + (3 * 60 * 60 * 1000)).toISOString()}.mp3`;
 
     try {
-      voice.textToSpeech(apiKey, voiceID, filename, text).then(res => {
+      await voice.textToSpeech(apiKey, voiceID, filename, text).then(res => {
             console.log(`Success, Audio saved as: ${filename}`);
         });
 
