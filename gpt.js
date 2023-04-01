@@ -27,7 +27,8 @@ async function chat (input, responseType) {
       const completion = await openai.createCompletion({ // Text generation AI
         model: "text-davinci-002",
         prompt: generatePrompt(input, responseType), // Prompt that you want ai to respond to
-        temperature: 0.6,
+        temperature: 0.9,
+        max_tokens: 150
       });
       const response = completion.data.choices[0].text;
       return response;
