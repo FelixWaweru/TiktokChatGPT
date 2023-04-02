@@ -58,8 +58,8 @@ async function textResponseGenerator(statement, liveEvent, callback){
     var result = sentiment.analyze(statement); // Score: -2, Comparative: -0.666
 
     // Response types
-    const positive = ["funny", "witty", "empathetic"];
-    const neutral = ["mildly sarcastic", "neutral"];
+    const positive = ["funny", "witty", "empathetic", "flirty", "hillarious"];
+    const neutral = ["mildly sarcastic", "neutral", "normal", "serious"];
     const negative = ["sarcastic", "very sarcastic", "angry"];
 
     // vary response type based on sentiment analysis
