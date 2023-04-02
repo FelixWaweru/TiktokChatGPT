@@ -19,22 +19,41 @@ async function liveStream(){
         console.info(`Connected to roomId ${state.roomId}`);
     }).catch(err => {
         console.error('Failed to connect', err);
-    })
+    });
 
     // In this case we listen to chat messages (comments)
     tiktokLiveConnection.on('chat', data => {
         console.log(`${data.uniqueId} (userId:${data.userId}) writes: ${data.comment}`);
         // Generate response
-        responseGenerator(data.comment);
+        responseGenerator(data.comment, 'chat');
+    });
+
+    tiktokLiveConnection.on('gift', data => {
+        if (data.giftType === 1 && data.repeatEnd) {
+            console.log(`${data.uniqueId} (userId:${data.nickname}) gifted: ${data.repeatCount} x ${data.giftName}`);
+            // Streak ended or non-streakable gift => process the gift with final repeat_count
+            // Generate response
+            const statement = `${data.nickname} by name for gifting ${data.repeatCount} ${data.giftName}`
+            responseGenerator(statement, 'gift');
+        }
     })
 
-    // And here we receive gifts sent to the streamer
-    tiktokLiveConnection.on('gift', data => {
-        console.log(`${data.uniqueId} (userId:${data.userId}) sends ${data.giftId}`);
-    })
+    tiktokLiveConnection.on('follow', (data) => {
+        console.log(`${data.uniqueId} (userId:${data.nickname}) followed`);
+        // Generate response
+        const statement = `${data.nickname} by name`
+        responseGenerator(statement, 'follow');
+    });
+
+    tiktokLiveConnection.on('emote', data => {
+        console.log(`${data.uniqueId} (userId:${data.nickname}) emoted`);
+        // Generate response
+        const statement = `${data.nickname} by name`
+        responseGenerator(statement, 'emote');
+    });
 }
 
-async function textResponseGenerator(statement, callback){
+async function textResponseGenerator(statement, liveEvent, callback){
     // Sentiment analysis
     var result = sentiment.analyze(statement); // Score: -2, Comparative: -0.666
 
@@ -44,6 +63,7 @@ async function textResponseGenerator(statement, callback){
     const negative = ["sarcastic", "very sarcastic", "angry"];
 
     // vary response type based on sentiment analysis
+    let conversationType = {};
     let conversationTone = "";
     if (result.score >= 4){
         conversationTone = positive[Math.floor(Math.random() * positive.length)];
@@ -55,15 +75,21 @@ async function textResponseGenerator(statement, callback){
         conversationTone = negative[Math.floor(Math.random() * negative.length)];
     }
 
-    await chat(statement, conversationTone, function(result){
+    conversationType = {
+        conversationTone: conversationTone,
+        liveEvent: liveEvent
+    };
+    
+
+    await chat(statement, conversationType, function(result){
         callback(result);
     });
 }
 
-async function responseGenerator(statement){
+async function responseGenerator(statement, liveEvent){
     // Generate Text response from chatGPT
     let textResponse = "";
-    await textResponseGenerator(statement, function(result){
+    await textResponseGenerator(statement, liveEvent, function(result){
         textResponse = result;
     });
     
@@ -78,4 +104,4 @@ async function responseGenerator(statement){
     });
 }
 
-responseGenerator("How is your day going")
+responseGenerator(`How do you work`, 'chat')
