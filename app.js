@@ -122,7 +122,23 @@ async function responseGenerator(statement, liveEvent) {
     // Generate Text response from chatGPT
     let textResponse = "";
     await textResponseGenerator(statement, liveEvent, function(result) {
-        textResponse = `Hey ${respondingTo}. ${result}`;
+        switch (liveEvent) {
+            case 'chat':
+                textResponse = `${result}`;
+                break;
+            case 'gift':
+                textResponse = `Yo! ${respondingTo}! ${result}`;
+                break;
+            case 'emote':
+                textResponse = `Hey ${respondingTo}. ${result}`;
+                break;
+            case 'follow':
+                textResponse = `Welcome to the club ${respondingTo}. ${result}`;
+                break;
+        
+            default:
+                break;
+        }
     });
 
     // Pass the response to the vocal module

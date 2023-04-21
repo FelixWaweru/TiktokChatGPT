@@ -4,7 +4,8 @@
   "description": "Tiktok chat bot",
   "main": "app.js",
   "scripts": {
-    "test": "npm test"
+    "test": "npm test",
+    "start": "node app.js"
   },
   "author": "Felix Waweru",
   "license": "ISC",
