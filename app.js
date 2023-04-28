@@ -1,10 +1,10 @@
-var chat = require('./gpt.js');
-var vocaliser = require('./voice.js');
-var player = require('play-sound')(opts = {})
+const chat = require('./gpt.js');
+const vocaliser = require('./voice.js');
+const player = require('play-sound')(opts = {})
 const {
     WebcastPushConnection
 } = require('tiktok-live-connector');
-var Sentiment = require('sentiment');
+const Sentiment = require('sentiment');
 require('dotenv').config();
 
 var sentiment = new Sentiment();
@@ -139,15 +139,15 @@ async function responseGenerator(statement, liveEvent) {
             default:
                 break;
         }
-    });
 
-    // Pass the response to the vocal module
-    vocaliser(textResponse, respondingTo).then(response => {
-        console.log(`RES: ${response}`)
-        player.play(response, function(err) {
-            if (err) {
-                console.log(`ERR: ${err}`)
-            }
+        // Pass the response to the vocal module
+        vocaliser(textResponse, respondingTo).then(response => {
+            console.log(`RES: ${response}`); // TODO: Await playing audio to complete before ending function
+            player.play(response, function(err) {
+                if (err) {
+                    console.log(`ERR: ${err}`)
+                }
+            });
         });
     });
 }
