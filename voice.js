@@ -4,7 +4,7 @@ const apiKey = process.env.ELEVEN_API_KEY;
 const voiceID = process.env.ELEVEN_VOICE_ID;
 
 async function vocaliser(text) {
-    const filename = `audio/${new Date(new Date().getTime() + (3 * 60 * 60 * 1000)).toISOString()}.mp3`;
+    const filename = `audio/${new Date(new Date().getTime() + (3 * 60 * 60 * 1000)).toISOString().slice(0,10)}.mp3`;
 
     try {
       await voice.textToSpeech(apiKey, voiceID, filename, text).then(res => {
