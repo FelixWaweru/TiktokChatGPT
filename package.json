@@ -15,8 +15,8 @@
     "elevenlabs-node": "^1.0.2",
     "fs": "^0.0.1-security",
     "openai": "^3.1.0",
-    "play-sound": "^1.1.5",
     "sentiment": "^5.0.2",
+    "sound-play": "^1.1.0",
     "tiktok-live-connector": "^1.0.2"
   }
 }

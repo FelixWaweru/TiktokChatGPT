@@ -1,6 +1,7 @@
 const chat = require('./gpt.js');
 const vocaliser = require('./voice.js');
-const player = require('play-sound')(opts = {})
+const sound = require("sound-play");
+const path = require("path");
 const {
     WebcastPushConnection
 } = require('tiktok-live-connector');
@@ -143,11 +144,11 @@ async function responseGenerator(statement, liveEvent) {
         // Pass the response to the vocal module
         vocaliser(textResponse, respondingTo).then(response => {
             console.log(`RES: ${response}`); // TODO: Await playing audio to complete before ending function
-            player.play(response, function(err) {
-                if (err) {
-                    console.log(`ERR: ${err}`)
-                }
-            });
+            
+            const filePath = path.join(__dirname, response);
+            sound.play(filePath).then((res) => 
+                console.log("done")
+            );
         });
     });
 }
