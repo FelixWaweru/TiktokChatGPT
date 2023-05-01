@@ -26,66 +26,72 @@ async function liveStream() {
         console.error('Failed to connect', err);
     });
 
-    if (!speaking) {
-        // In this case we listen to chat messages (comments)
-        tiktokLiveConnection.on('chat', data => {
-            // Wait for response
+    // In this case we listen to chat messages (comments)
+    tiktokLiveConnection.on('chat', data => {
+        // Wait for response
+        if (!speaking) {
             speaking = true;
 
             console.log(`${data.uniqueId} (userId:${data.userId}) writes: ${data.comment}`);
             // Generate response
-            respondingTo = data.nickname;
+            respondingTo = data.uniqueId;
             responseGenerator(data.comment, 'chat').then(response => {
                 // Complete response
                 speaking = false;
             });
-        });
+        }
+    });
 
-        tiktokLiveConnection.on('gift', data => {
-            // Wait for response
+    tiktokLiveConnection.on('gift', data => {
+        // Wait for response
+        if (!speaking) {
             speaking = true;
 
             if (data.giftType === 1 && data.repeatEnd) {
                 console.log(`${data.uniqueId} (userId:${data.nickname}) gifted: ${data.repeatCount} x ${data.giftName}`);
                 // Streak ended or non-streakable gift => process the gift with final repeat_count
                 // Generate response
-                respondingTo = data.nickname;
-                const statement = `${data.nickname} by name for gifting ${data.repeatCount} ${data.giftName}`
+                respondingTo = data.uniqueId;
+                const statement = `${data.uniqueId} by name for gifting ${data.repeatCount} ${data.giftName}`
                 responseGenerator(statement, 'gift').then(response => {
                     // Complete response
                     speaking = false;
                 });
             }
-        })
+        }
+    })
 
-        tiktokLiveConnection.on('follow', (data) => {
-            // Wait for response
+    tiktokLiveConnection.on('follow', (data) => {
+        // Wait for response
+        if (!speaking) {
             speaking = true;
 
-            console.log(`${data.uniqueId} (userId:${data.nickname}) followed`);
+            console.log(`${data.uniqueId} (userId:${data.uniqueId}) followed`);
             // Generate response
-            respondingTo = data.nickname;
-            const statement = `${data.nickname} by name`
+            respondingTo = data.uniqueId;
+            const statement = `${data.uniqueId} by name`
             responseGenerator(statement, 'follow').then(response => {
                 // Complete response
                 speaking = false;
             });
-        });
+        }
+    });
 
-        tiktokLiveConnection.on('emote', data => {
-            // Wait for response
+    tiktokLiveConnection.on('emote', data => {
+        // Wait for response
+        if (!speaking) {
             speaking = true;
 
             console.log(`${data.uniqueId} (userId:${data.nickname}) emoted`);
             // Generate response
-            respondingTo = data.nickname;
-            const statement = `${data.nickname} by name`
+            respondingTo = data.uniqueId;
+            const statement = `${data.uniqueId} by name`
             responseGenerator(statement, 'emote').then(response => {
                 // Complete response
                 speaking = false;
             });
-        });
-    }
+        }
+    });
 }
 
 async function textResponseGenerator(statement, liveEvent, callback) {
