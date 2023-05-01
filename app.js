@@ -15,6 +15,7 @@ async function liveStream() {
     // Username of someone who is currently live
     let tiktokUsername = process.env.TIKTOK_USERNAME;
     let speaking = false;
+    let lastChatActivity = Date.now();
 
     // Create a new wrapper object and pass the username
     let tiktokLiveConnection = new WebcastPushConnection(tiktokUsername);
@@ -39,6 +40,8 @@ async function liveStream() {
                 // Complete response
                 speaking = false;
             });
+
+            lastChatActivity = Date.now();
         }
     });
 
@@ -58,6 +61,8 @@ async function liveStream() {
                     speaking = false;
                 });
             }
+
+            lastChatActivity = Date.now();
         }
     })
 
@@ -74,6 +79,8 @@ async function liveStream() {
                 // Complete response
                 speaking = false;
             });
+
+            lastChatActivity = Date.now();
         }
     });
 
@@ -90,8 +97,23 @@ async function liveStream() {
                 // Complete response
                 speaking = false;
             });
+
+            lastChatActivity = Date.now();
         }
     });
+
+    // When there is no livestream activity for more than 30 seconds
+    while(Date.now() - lastChatActivity > 30000){
+        console.log("Stream Idle. Passing some time...");
+        speaking = true;
+
+        responseGenerator('Come up with a story or tell us something about yourself to pass the time', 'chat').then(response => {
+            // Complete response
+            speaking = false;
+        });
+
+        lastChatActivity = Date.now();
+    }
 }
 
 async function textResponseGenerator(statement, liveEvent, callback) {
