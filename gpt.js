@@ -14,7 +14,7 @@ function generatePrompt(statement, conversationType) { // Conversational text in
     case 'chat':
       return `${basePrompt}, Come up with a brief, ${conversationType.conversationTone} response to the statement ${inputStatement}`;
     case 'gift':
-      return `${basePrompt}, Come up with an excited response thanking user ${inputStatement}`;
+      return `${basePrompt}, Come up with a brief, excited response thanking user ${inputStatement}`;
     case 'follow':
       return `${basePrompt}, Come up with an brief, unique response thanking ${inputStatement} for following you on tiktok`;
     case 'emote':
