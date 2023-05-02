@@ -127,8 +127,8 @@ async function liveStream() {
         }
     });
 
-    // When there is no livestream activity for more than 30 seconds
-    while(Date.now() - lastChatActivity > 30000 && speaking === false){
+    // When there is no livestream activity for more than 120 seconds
+    while(Date.now() - lastChatActivity > 120000 && speaking === false){
         console.log("Stream Idle. Passing some time...");
         speaking = true;
 
@@ -217,7 +217,7 @@ async function responseGenerator(statement, liveEvent, respondingTo) {
         });
     });
     // Manual delay to give bot response time
-    await new Promise(resolve => setTimeout(resolve, 20000));
+    await new Promise(resolve => setTimeout(resolve, 40000));
 }
 
 liveStream();
