@@ -170,15 +170,16 @@ async function responseGenerator(statement, liveEvent) {
         }
 
         // Pass the response to the vocal module
-        vocaliser(textResponse, respondingTo).then(response => {
+        vocaliser(textResponse, respondingTo).then(async response => {
             console.log(`RES: ${response}`); // TODO: Await playing audio to complete before ending function
             
             const filePath = path.join(__dirname, response);
-            sound.play(filePath).then((res) => 
-                console.log("done")
-            );
+            await sound.play(filePath);
+            console.log("done");
         });
     });
+    // Manual delay to give bot response time
+    await new Promise(resolve => setTimeout(resolve, 10000));
 }
 
 liveStream();
