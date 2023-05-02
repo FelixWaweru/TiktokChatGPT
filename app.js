@@ -16,6 +16,7 @@ async function liveStream() {
     let tiktokUsername = process.env.TIKTOK_USERNAME;
     let speaking = false;
     let lastChatActivity = Date.now();
+    let liveEvents = [];
 
     // Create a new wrapper object and pass the username
     let tiktokLiveConnection = new WebcastPushConnection(tiktokUsername);
@@ -36,7 +37,7 @@ async function liveStream() {
             console.log(`${data.uniqueId} (userId:${data.userId}) writes: ${data.comment}`);
             // Generate response
             respondingTo = data.uniqueId;
-            responseGenerator(data.comment, 'chat').then(response => {
+            responseGenerator(data.comment, 'chat', respondingTo).then(response => {
                 // Complete response
                 speaking = false;
             });
@@ -46,6 +47,9 @@ async function liveStream() {
     });
 
     tiktokLiveConnection.on('gift', data => {
+        // Generate response
+        respondingTo = data.uniqueId;
+        const statement = `${data.uniqueId} for gifting ${data.repeatCount} ${data.giftName}`
         // Wait for response
         if (!speaking) {
             speaking = true;
@@ -53,10 +57,7 @@ async function liveStream() {
             if (data.giftType === 1 && data.repeatEnd) {
                 console.log(`${data.uniqueId} (userId:${data.nickname}) gifted: ${data.repeatCount} x ${data.giftName}`);
                 // Streak ended or non-streakable gift => process the gift with final repeat_count
-                // Generate response
-                respondingTo = data.uniqueId;
-                const statement = `${data.uniqueId} by name for gifting ${data.repeatCount} ${data.giftName}`
-                responseGenerator(statement, 'gift').then(response => {
+                responseGenerator(statement, 'gift', respondingTo).then(response => {
                     // Complete response
                     speaking = false;
                 });
@@ -64,55 +65,92 @@ async function liveStream() {
 
             lastChatActivity = Date.now();
         }
+        else {
+            if (data.giftType === 1 && data.repeatEnd) {
+                // Streak ended or non-streakable gift => process the gift with final repeat_count
+                liveEvents.push({
+                    respondingTo, respondingTo,
+                    statement: statement,
+                    event: 'gift'
+                });
+            }
+        }
     })
 
     tiktokLiveConnection.on('follow', (data) => {
+        // Generate response
+        respondingTo = data.uniqueId;
+        const statement = `${data.uniqueId}`
+
         // Wait for response
         if (!speaking) {
             speaking = true;
-
             console.log(`${data.uniqueId} (userId:${data.uniqueId}) followed`);
-            // Generate response
-            respondingTo = data.uniqueId;
-            const statement = `${data.uniqueId} by name`
-            responseGenerator(statement, 'follow').then(response => {
+            responseGenerator(statement, 'follow', respondingTo).then(response => {
                 // Complete response
                 speaking = false;
             });
 
             lastChatActivity = Date.now();
+        }
+        else {
+            liveEvents.push({
+                respondingTo: respondingTo,
+                statement: statement,
+                event: 'follow'
+            });
         }
     });
 
     tiktokLiveConnection.on('emote', data => {
+        // Generate response
+        respondingTo = data.uniqueId;
+        const statement = `${data.uniqueId}`
+
         // Wait for response
         if (!speaking) {
             speaking = true;
-
             console.log(`${data.uniqueId} (userId:${data.nickname}) emoted`);
-            // Generate response
-            respondingTo = data.uniqueId;
-            const statement = `${data.uniqueId} by name`
-            responseGenerator(statement, 'emote').then(response => {
+            responseGenerator(statement, 'emote', respondingTo).then(response => {
                 // Complete response
                 speaking = false;
             });
 
             lastChatActivity = Date.now();
         }
+        else {
+            liveEvents.push({
+                respondingTo: respondingTo,
+                statement: statement,
+                event: 'emote'
+            });
+        }
     });
 
     // When there is no livestream activity for more than 30 seconds
-    while(Date.now() - lastChatActivity > 30000){
+    while(Date.now() - lastChatActivity > 30000 && speaking === false){
         console.log("Stream Idle. Passing some time...");
         speaking = true;
 
-        responseGenerator('Come up with a story or tell us something about yourself to pass the time', 'chat').then(response => {
+        responseGenerator('Come up with a story or tell us something about yourself to pass the time', 'chat', 'Everyone').then(response => {
             // Complete response
             speaking = false;
         });
 
         lastChatActivity = Date.now();
+    }
+
+    // Stores special livestream events (gifting, follow, emote) and responds to them after the bot has finished responding to the chat
+    while(liveEvents.length > 0 && speaking === false){
+        console.log(`LIVE: ${liveEvents}`)
+        if (!speaking) {
+            speaking = true;
+            liveEvents.map(async value => {
+                await responseGenerator(value.statement, value.event, value.respondingTo);
+            });
+            liveEvents = [];
+            speaking = false;
+        }
     }
 }
 
@@ -147,7 +185,7 @@ async function textResponseGenerator(statement, liveEvent, callback) {
     });
 }
 
-async function responseGenerator(statement, liveEvent) {
+async function responseGenerator(statement, liveEvent, respondingTo) {
     // Generate Text response from chatGPT
     let textResponse = "";
     await textResponseGenerator(statement, liveEvent, function(result) {
@@ -179,7 +217,7 @@ async function responseGenerator(statement, liveEvent) {
         });
     });
     // Manual delay to give bot response time
-    await new Promise(resolve => setTimeout(resolve, 10000));
+    await new Promise(resolve => setTimeout(resolve, 20000));
 }
 
 liveStream();
