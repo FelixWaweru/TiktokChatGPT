@@ -10,6 +10,9 @@ require('dotenv').config();
 
 var sentiment = new Sentiment();
 var respondingTo = '';
+var responseStreamDelay = 40000; // The delay between each stream event i.e 'gift'
+var backlogStreamDelay = 10000; // The delay between each backlogged stream event
+var liveIdleTime = 120000; // The amount of time within which the stream has been idle for too long
 
 async function liveStream() {
     // Username of someone who is currently live
@@ -37,7 +40,9 @@ async function liveStream() {
             console.log(`${data.uniqueId} (userId:${data.userId}) writes: ${data.comment}`);
             // Generate response
             respondingTo = data.uniqueId;
-            responseGenerator(data.comment, 'chat', respondingTo).then(response => {
+            responseGenerator(data.comment, 'chat', respondingTo).then(async response => {
+                // Manual delay to give bot response time
+                await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
                 // Complete response
                 speaking = false;
             });
@@ -57,7 +62,9 @@ async function liveStream() {
             if (data.giftType === 1 && data.repeatEnd) {
                 console.log(`${data.uniqueId} (userId:${data.nickname}) gifted: ${data.repeatCount} x ${data.giftName}`);
                 // Streak ended or non-streakable gift => process the gift with final repeat_count
-                responseGenerator(statement, 'gift', respondingTo).then(response => {
+                responseGenerator(statement, 'gift', respondingTo).then(async response => {
+                    // Manual delay to give bot response time
+                    await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
                     // Complete response
                     speaking = false;
                 });
@@ -86,7 +93,9 @@ async function liveStream() {
         if (!speaking) {
             speaking = true;
             console.log(`${data.uniqueId} (userId:${data.uniqueId}) followed`);
-            responseGenerator(statement, 'follow', respondingTo).then(response => {
+            responseGenerator(statement, 'follow', respondingTo).then(async response => {
+                // Manual delay to give bot response time
+                await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
                 // Complete response
                 speaking = false;
             });
@@ -111,7 +120,9 @@ async function liveStream() {
         if (!speaking) {
             speaking = true;
             console.log(`${data.uniqueId} (userId:${data.nickname}) emoted`);
-            responseGenerator(statement, 'emote', respondingTo).then(response => {
+            responseGenerator(statement, 'emote', respondingTo).then(async response => {
+                // Manual delay to give bot response time
+                await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
                 // Complete response
                 speaking = false;
             });
@@ -128,11 +139,13 @@ async function liveStream() {
     });
 
     // When there is no livestream activity for more than 120 seconds
-    while(Date.now() - lastChatActivity > 120000 && speaking === false){
+    while(Date.now() - lastChatActivity > liveIdleTime && speaking === false){
         console.log("Stream Idle. Passing some time...");
         speaking = true;
 
-        responseGenerator('Come up with a story or tell us something about yourself to pass the time', 'chat', 'Everyone').then(response => {
+        responseGenerator('Come up with a story or tell us something about yourself to pass the time', 'chat', 'Everyone').then(async response => {
+            // Manual delay to give bot response time
+            await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
             // Complete response
             speaking = false;
         });
@@ -147,7 +160,9 @@ async function liveStream() {
             console.log(`SPK: ${speaking}`)
             if (!speaking) {
                 speaking = true;
-                await responseGenerator(liveEvents[i].statement, liveEvents[i].event, liveEvents[i].respondingTo).then(r => {
+                await responseGenerator(liveEvents[i].statement, liveEvents[i].event, liveEvents[i].respondingTo).then(async response => {
+                    // Shorter manual delay to give bot response time
+                    await new Promise(resolve => setTimeout(resolve, backlogStreamDelay));
                     speaking = false;
                 });
             }
@@ -218,8 +233,6 @@ async function responseGenerator(statement, liveEvent, respondingTo) {
             console.log("done");
         });
     });
-    // Manual delay to give bot response time
-    await new Promise(resolve => setTimeout(resolve, 40000));
 }
 
 liveStream();
