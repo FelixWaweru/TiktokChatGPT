@@ -142,7 +142,7 @@ async function liveStream() {
 
     // Stores special livestream events (gifting, follow, emote) and responds to them after the bot has finished responding to the chat
     while(liveEvents.length > 0 && speaking === false){
-        console.log(`LIVE: ${liveEvents}`)
+        console.log(`RESPONDING TO BACKLOG: ${liveEvents}`)
         if (!speaking) {
             speaking = true;
             liveEvents.map(async value => {
