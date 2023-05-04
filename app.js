@@ -16,7 +16,7 @@ async function liveStream() {
     let tiktokUsername = process.env.TIKTOK_USERNAME;
     let speaking = false;
     let lastChatActivity = Date.now();
-    let liveEvents = [];
+        let liveEvents = [];
 
     // Create a new wrapper object and pass the username
     let tiktokLiveConnection = new WebcastPushConnection(tiktokUsername);
@@ -142,15 +142,17 @@ async function liveStream() {
 
     // Stores special livestream events (gifting, follow, emote) and responds to them after the bot has finished responding to the chat
     while(liveEvents.length > 0 && speaking === false){
-        console.log(`RESPONDING TO BACKLOG: ${liveEvents}`)
-        if (!speaking) {
-            speaking = true;
-            liveEvents.map(async value => {
-                await responseGenerator(value.statement, value.event, value.respondingTo);
-            });
-            liveEvents = [];
-            speaking = false;
+        console.log(`RESPONDING TO BACKLOG: ${liveEvents}`);
+        for (let i = 0; i < liveEvents.length; i++) {
+            console.log(`SPK: ${speaking}`)
+            if (!speaking) {
+                speaking = true;
+                await responseGenerator(liveEvents[i].statement, liveEvents[i].event, liveEvents[i].respondingTo).then(r => {
+                    speaking = false;
+                });
+            }
         }
+        liveEvents = [];
     }
 }
 
