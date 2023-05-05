@@ -12,6 +12,8 @@ A conversational bot for tiktok livestreams built on ChatGPT.
 - Finally, to setup the project, run:
 
 ```bash
+mkdir audio
+# then
 npm install
 # then
 npm start
