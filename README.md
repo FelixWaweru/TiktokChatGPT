@@ -47,5 +47,22 @@ npm install
 npm start
 ```
 
-### Contribution
+## Setup
+
+```bash    
+TiktokChatGPT
+├── docs         # documentation
+│   ├── images
+│   └── CONTRIBUTING.md
+├── audio        # Response audio file store
+│   ├── example.mp3
+├── app.js       # Tiktok livestream responder
+├── gpt.js       # OpenAI prompt and response function
+├── voice.js     # ElevenLabs vocal response function
+├── .env         # credentials and environment variables
+├── package.json
+├── README.md
+```
+
+## Contribution
 Contributions are welcome. Checkout the [CONTRIBUTING.md](https://github.com/FelixWaweru/TiktokChatGPT/tree/main/docs/CONTRIBUTING.md) to learn more.
