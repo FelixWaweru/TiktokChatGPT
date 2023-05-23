@@ -46,3 +46,6 @@ npm install
 # then
 npm start
 ```
+
+### Contribution
+Contributions are welcome. Checkout the [CONTRIBUTING.md](https://github.com/FelixWaweru/TiktokChatGPT/tree/main/docs/CONTRIBUTING.md) to learn more.
