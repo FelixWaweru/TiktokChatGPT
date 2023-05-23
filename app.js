@@ -10,9 +10,9 @@ require('dotenv').config();
 
 var sentiment = new Sentiment();
 var respondingTo = '';
-var responseStreamDelay = 40000; // The delay between each stream event i.e 'gift'
+var responseStreamDelay = 5000; // The delay between each stream event i.e 'gift'
 var backlogStreamDelay = 10000; // The delay between each backlogged stream event
-var liveIdleTime = 120000; // The amount of time within which the stream has been idle for too long
+var liveIdleTime = 60000; // The amount of time within which the stream has been idle for too long
 
 async function liveStream() {
     // Username of someone who is currently live
