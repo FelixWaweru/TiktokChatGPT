@@ -51,15 +51,15 @@ npm start
 
 ```bash    
 TiktokChatGPT
-├── docs         # documentation
+├── docs         # Documentation
 │   ├── images
 │   └── CONTRIBUTING.md
 ├── audio        # Response audio file store
-│   ├── example.mp3
+│   └── example.mp3
 ├── app.js       # Tiktok livestream responder
 ├── gpt.js       # OpenAI prompt and response function
 ├── voice.js     # ElevenLabs vocal response function
-├── .env         # credentials and environment variables
+├── .env         # Credentials and environment variables
 ├── package.json
 ├── README.md
 ```
