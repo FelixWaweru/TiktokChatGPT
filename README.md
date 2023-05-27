@@ -63,6 +63,7 @@ TiktokChatGPT
 ├── app.js       # Tiktok livestream responder
 ├── gpt.js       # OpenAI prompt and response function
 ├── voice.js     # ElevenLabs vocal response function
+├── logger.js    # Logging function
 ├── .env         # Credentials and environment variables
 ├── package.json
 ├── README.md
