@@ -138,6 +138,33 @@ async function liveStream() {
         }
     });
 
+        tiktokLiveConnection.on('member', (data) => {
+        // Generate response
+        respondingTo = data.uniqueId;
+        const statement = `${data.uniqueId}`
+
+        // Wait for response
+        if (!speaking) {
+            speaking = true;
+            console.log(`${data.uniqueId} (userId:${data.uniqueId}) joined livestream`);
+            responseGenerator(statement, 'join', respondingTo).then(async response => {
+                // Manual delay to give bot response time
+                await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
+                // Complete response
+                speaking = false;
+            });
+
+            lastChatActivity = Date.now();
+        }
+        else {
+            liveEvents.push({
+                respondingTo: respondingTo,
+                statement: statement,
+                event: 'join'
+            });
+        }
+    });
+
     // When there is no livestream activity for more than 120 seconds
     while(Date.now() - lastChatActivity > liveIdleTime && speaking === false){
         console.log("Stream Idle. Passing some time...");
@@ -218,6 +245,9 @@ async function responseGenerator(statement, liveEvent, respondingTo) {
                 break;
             case 'follow':
                 textResponse = `Welcome to the club ${respondingTo}. ${result}`;
+                break;
+            case 'join':
+                textResponse = `Welcome ${respondingTo}`;
                 break;
         
             default:
