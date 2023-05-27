@@ -42,6 +42,8 @@ To run this code, you require an API key from ElevenLabs and OpenAI.
 ```bash
 mkdir audio
 # then
+mkdir logs
+# then
 npm install
 # then
 npm start
@@ -56,6 +58,8 @@ TiktokChatGPT
 │   └── CONTRIBUTING.md
 ├── audio        # Response audio file store
 │   └── example.mp3
+├── logs         # Log file store
+│   └── access.log
 ├── app.js       # Tiktok livestream responder
 ├── gpt.js       # OpenAI prompt and response function
 ├── voice.js     # ElevenLabs vocal response function
