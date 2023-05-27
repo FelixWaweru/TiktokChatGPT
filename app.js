@@ -247,7 +247,7 @@ async function responseGenerator(statement, liveEvent, respondingTo) {
                 textResponse = `Welcome to the club ${respondingTo}. ${result}`;
                 break;
             case 'join':
-                textResponse = `Welcome ${respondingTo}`;
+                textResponse = `Welcome to the stream ${respondingTo}`;
                 break;
         
             default:
