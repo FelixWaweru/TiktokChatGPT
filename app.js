@@ -7,6 +7,7 @@ const {
 } = require('tiktok-live-connector');
 const Sentiment = require('sentiment');
 require('dotenv').config();
+const log = require('./logger.js');
 
 var sentiment = new Sentiment();
 var respondingTo = '';
@@ -26,7 +27,7 @@ async function liveStream() {
 
     // Connect to the chat (await can be used as well)
     tiktokLiveConnection.connect().then(state => {
-        console.info(`Connected to roomId ${state.roomId}`);
+        log(`Connected to roomId ${state.roomId}`);
     }).catch(err => {
         console.error('Failed to connect', err);
     });
@@ -37,7 +38,7 @@ async function liveStream() {
         if (!speaking) {
             speaking = true;
 
-            console.log(`${data.uniqueId} (userId:${data.userId}) writes: ${data.comment}`);
+            log(`${data.uniqueId} (userId:${data.userId}) writes: ${data.comment}`);
             // Generate response
             respondingTo = data.uniqueId;
             responseGenerator(data.comment, 'chat', respondingTo).then(async response => {
@@ -60,7 +61,7 @@ async function liveStream() {
             speaking = true;
 
             if (data.giftType === 1 && data.repeatEnd) {
-                console.log(`${data.uniqueId} (userId:${data.nickname}) gifted: ${data.repeatCount} x ${data.giftName}`);
+                log(`${data.uniqueId} (userId:${data.nickname}) gifted: ${data.repeatCount} x ${data.giftName}`);
                 // Streak ended or non-streakable gift => process the gift with final repeat_count
                 responseGenerator(statement, 'gift', respondingTo).then(async response => {
                     // Manual delay to give bot response time
@@ -92,7 +93,7 @@ async function liveStream() {
         // Wait for response
         if (!speaking) {
             speaking = true;
-            console.log(`${data.uniqueId} (userId:${data.uniqueId}) followed`);
+            log(`${data.uniqueId} (userId:${data.uniqueId}) followed`);
             responseGenerator(statement, 'follow', respondingTo).then(async response => {
                 // Manual delay to give bot response time
                 await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
@@ -119,7 +120,7 @@ async function liveStream() {
         // Wait for response
         if (!speaking) {
             speaking = true;
-            console.log(`${data.uniqueId} (userId:${data.nickname}) emoted`);
+            log(`${data.uniqueId} (userId:${data.nickname}) emoted`);
             responseGenerator(statement, 'emote', respondingTo).then(async response => {
                 // Manual delay to give bot response time
                 await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
@@ -138,9 +139,36 @@ async function liveStream() {
         }
     });
 
+        tiktokLiveConnection.on('member', (data) => {
+        // Generate response
+        respondingTo = data.uniqueId;
+        const statement = `${data.uniqueId}`
+
+        // Wait for response
+        if (!speaking) {
+            speaking = true;
+            log(`${data.uniqueId} (userId:${data.uniqueId}) joined livestream`);
+            responseGenerator(statement, 'join', respondingTo).then(async response => {
+                // Manual delay to give bot response time
+                await new Promise(resolve => setTimeout(resolve, responseStreamDelay));
+                // Complete response
+                speaking = false;
+            });
+
+            lastChatActivity = Date.now();
+        }
+        else {
+            liveEvents.push({
+                respondingTo: respondingTo,
+                statement: statement,
+                event: 'join'
+            });
+        }
+    });
+
     // When there is no livestream activity for more than 120 seconds
     while(Date.now() - lastChatActivity > liveIdleTime && speaking === false){
-        console.log("Stream Idle. Passing some time...");
+        log("Stream Idle. Passing some time...");
         speaking = true;
 
         responseGenerator('Come up with a story or tell us something about yourself to pass the time', 'chat', 'Everyone').then(async response => {
@@ -155,9 +183,9 @@ async function liveStream() {
 
     // Stores special livestream events (gifting, follow, emote) and responds to them after the bot has finished responding to the chat
     while(liveEvents.length > 0 && speaking === false){
-        console.log(`RESPONDING TO BACKLOG: ${liveEvents}`);
+        log(`RESPONDING TO BACKLOG: ${liveEvents}`);
         for (let i = 0; i < liveEvents.length; i++) {
-            console.log(`SPK: ${speaking}`)
+            log(`SPK: ${speaking}`)
             if (!speaking) {
                 speaking = true;
                 await responseGenerator(liveEvents[i].statement, liveEvents[i].event, liveEvents[i].respondingTo).then(async response => {
@@ -219,6 +247,9 @@ async function responseGenerator(statement, liveEvent, respondingTo) {
             case 'follow':
                 textResponse = `Welcome to the club ${respondingTo}. ${result}`;
                 break;
+            case 'join':
+                textResponse = `Welcome to the stream ${respondingTo}`;
+                break;
         
             default:
                 break;
@@ -226,11 +257,11 @@ async function responseGenerator(statement, liveEvent, respondingTo) {
 
         // Pass the response to the vocal module
         vocaliser(textResponse, respondingTo).then(async response => {
-            console.log(`RES: ${response}`); // TODO: Await playing audio to complete before ending function
+            log(`RES: ${response}`); // TODO: Await playing audio to complete before ending function
             
             const filePath = path.join(__dirname, response);
             await sound.play(filePath);
-            console.log("done");
+            log("done");
         });
     });
 }
